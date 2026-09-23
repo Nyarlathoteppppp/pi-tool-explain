@@ -259,6 +259,87 @@ test("registered bash exposes intent in schemas and TUI while stripping it befor
 	});
 });
 
+test("native keeps Pi renderers for all seven built-ins and adds one summary line", async () => {
+	initTheme("dark", false);
+	const { api, registeredTools } = createExtensionApiStub();
+	const config = { ...DEFAULT_TOOL_DISPLAY_CONFIG, toolCallStyle: "native" as const };
+	registerToolDisplayOverrides(api, () => config);
+	const definitions = {
+		read: createReadToolDefinition(process.cwd()),
+		bash: createBashToolDefinition(process.cwd()),
+		edit: createEditToolDefinition(process.cwd()),
+		write: createWriteToolDefinition(process.cwd()),
+		grep: createGrepToolDefinition(process.cwd()),
+		find: createFindToolDefinition(process.cwd()),
+		ls: createLsToolDefinition(process.cwd()),
+	};
+	const cases = [
+		{ name: "read", args: { path: "sample.txt" } },
+		{ name: "bash", args: { command: "printf hello" } },
+		{ name: "edit", args: { path: "sample.txt", oldText: "old", newText: "new" } },
+		{ name: "write", args: { path: "sample.txt", content: "hello" } },
+		{ name: "grep", args: { pattern: "hello", path: "." } },
+		{ name: "find", args: { pattern: "*.txt", path: "." } },
+		{ name: "ls", args: { path: "." } },
+	] as const;
+	const theme = {
+		fg: (_color: string, value: string) => value,
+		bg: (_color: string, value: string) => value,
+		bold: (value: string) => value,
+	};
+	for (const { name, args } of cases) {
+		const tool = registeredTools.find((entry) => entry.name === name);
+		assert.ok(tool?.renderCall && tool.renderResult, `${name} is registered with both renderers`);
+		const context = { cwd: process.cwd(), argsComplete: false, isPartial: false, showImages: true, state: {} };
+		const native = definitions[name].renderCall?.(args as never, theme as never, context as never) as { render(width: number): string[] };
+		const decorated = tool.renderCall({ ...args, displaySummary: "Inspecting the sample" }, theme, context) as { render(width: number): string[] };
+		const nativeLines = native.render(120);
+		const decoratedLines = decorated.render(120);
+		assert.deepEqual(decoratedLines.slice(0, -1), nativeLines, `${name} keeps Pi's call rendering`);
+		assert.equal(decoratedLines.at(-1), "  ↳ Inspecting the sample", `${name} adds exactly one summary`);
+		const updated = tool.renderCall({ ...args, displaySummary: "Inspecting the sample" }, theme, {
+			...context, lastComponent: decorated,
+		}) as { render(width: number): string[] };
+		assert.equal(updated.render(120).filter((line) => line.includes("↳ Inspecting the sample")).length, 1,
+			`${name} keeps one summary during a partial update`);
+		assert.equal(tool.renderShell, definitions[name].renderShell, `${name} keeps Pi's shell`);
+		const result = { content: [{ type: "text", text: "hello" }] };
+		const options = { expanded: false, isPartial: false };
+		const nativeResult = definitions[name].renderResult?.(result as never, options as never, theme as never, {
+			...context, args, state: {},
+		} as never) as { render(width: number): string[] };
+		const decoratedResult = tool.renderResult(result, options, theme, {
+			...context, args, state: {},
+		}) as { render(width: number): string[] };
+		assert.deepEqual(decoratedResult.render(120), nativeResult.render(120), `${name} keeps Pi's result rendering`);
+		if (name === "bash") {
+			const schema = tool.parameters as { properties: Record<string, unknown> };
+			assert.ok(schema.properties.displaySummary, "bash retains the intent schema");
+		}
+	}
+});
+
+test("native executes available built-ins through the existing tool path", async () => {
+	await withTempDir("pi-tool-display-native-execute-", async (dir) => {
+		const { api, registeredTools } = createExtensionApiStub();
+		registerToolDisplayOverrides(api, () => ({ ...DEFAULT_TOOL_DISPLAY_CONFIG, toolCallStyle: "native" }));
+		const tools = new Map(registeredTools.map((tool) => [tool.name, tool as ExecutableToolLike]));
+		const run = async (name: string, args: Record<string, unknown>) => {
+			const tool = tools.get(name);
+			assert.ok(tool, `${name} is registered`);
+			const prepared = tool.prepareArguments?.(args) ?? args;
+			return tool.execute(`native-${name}`, prepared, undefined, undefined, { cwd: dir });
+		};
+		await run("write", { path: "sample.txt", content: "old word\n" });
+		assert.match(getTextOutput(await run("read", { path: "sample.txt" })), /old word/);
+		assert.match(getTextOutput(await run("bash", { command: "printf native", displaySummary: "Checking shell" })), /native/);
+		await run("edit", { path: "sample.txt", oldText: "old", newText: "new" });
+		assert.match(getTextOutput(await run("read", { path: "sample.txt" })), /new word/);
+		assert.match(getTextOutput(await run("grep", { pattern: "new word", path: dir })), /sample\.txt/);
+		assert.match(getTextOutput(await run("ls", { path: dir })), /sample\.txt/);
+	});
+});
+
 test("path-bearing built-ins compact long call paths and restore them when expanded", () => {
 	const { api, registeredTools } = createExtensionApiStub();
 	const config = {

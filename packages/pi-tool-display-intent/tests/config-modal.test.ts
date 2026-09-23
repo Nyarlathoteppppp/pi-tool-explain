@@ -277,6 +277,8 @@ test("aggregate modal exposes global diff settings and hides individual-only set
 	assert.equal(individualSettings.find((setting) => setting.id === "diffCollapsedMode")?.currentValue, "summary");
 	assert.ok(individualSettings.some((setting) => setting.id === "toolIntentLanguage"));
 	assert.equal(individualSettings.some((setting) => setting.id === "expandedTimeline"), false);
+	assert.deepEqual(individualSettings.find((setting) => setting.id === "toolCallStyle")?.values, ["compact", "claude", "native"]);
+	assert.equal(applySetting(individual, "toolCallStyle", "native").toolCallStyle, "native");
 	assert.equal(individualSettings.some((setting) => setting.id === "showContextGrowth"), false);
 });
 

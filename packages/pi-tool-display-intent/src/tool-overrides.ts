@@ -37,6 +37,7 @@ import {
 } from "./aggregate-activity.js";
 import { setAggregateCallPresentationLookup } from "./call-presentation-registry.js";
 import { renderBashCall } from "./bash-display.js";
+import { NativeToolCallWithSummary } from "./native-tool-call.js";
 import {
   normalizeDisplaySummary,
   stripDisplaySummary,
@@ -1958,8 +1959,56 @@ export function registerToolDisplayOverrides(
         () => getConfig().showContextGrowth,
       )
     : undefined;
-  const registerOwnedTool = (tool: RuntimeToolDefinition): void =>
+  const nativeDefinitions: Partial<Record<BuiltInToolOverrideName, RuntimeToolDefinition>> = {};
+  const getNativeDefinition = (name: BuiltInToolOverrideName): RuntimeToolDefinition => {
+    let definition = nativeDefinitions[name];
+    if (!definition) {
+      const cwd = process.cwd();
+      const factories = {
+        read: () => createReadToolDefinition(cwd),
+        grep: () => createGrepToolDefinition(cwd),
+        find: () => createFindToolDefinition(cwd),
+        ls: () => createLsToolDefinition(cwd),
+        bash: () => createBashToolDefinition(cwd, loadBashToolOverrideOptions()),
+        edit: () => createEditToolDefinition(cwd),
+        write: () => createWriteToolDefinition(cwd),
+      };
+      definition = factories[name]() as unknown as RuntimeToolDefinition;
+      nativeDefinitions[name] = definition;
+    }
+    return definition;
+  };
+  const registerOwnedTool = (tool: RuntimeToolDefinition): void => {
+    if (getConfig().toolCallStyle === "native" && getConfig().toolCallLayout === "individual") {
+      const name = tool.name as BuiltInToolOverrideName;
+      const piTool = getNativeDefinition(name);
+      const nativeRenderCall = piTool.renderCall;
+      const nativeRenderResult = piTool.renderResult;
+      tool = {
+        ...tool,
+        renderShell: piTool.renderShell,
+        renderCall(args, theme, context) {
+          const previous = context?.lastComponent;
+          const nativeContext = previous instanceof NativeToolCallWithSummary
+            ? { ...context, lastComponent: previous.nativeCall }
+            : context;
+          const component = nativeRenderCall?.(stripDisplaySummary(args) as never, theme as never, nativeContext as never);
+          if (!component || typeof component !== "object" || !("render" in component) ||
+            typeof component.render !== "function" || !("invalidate" in component) ||
+            typeof component.invalidate !== "function") return component;
+          const summary = resolveDisplaySummaryForTool(args, name, getConfig().toolIntent);
+          const line = summary && (summary.source !== "fallback" || shouldShowDeterministicFallback(context))
+            ? theme.fg("muted", `  ↳ ${summary.text}`)
+            : "";
+          return new NativeToolCallWithSummary(component as Component, line);
+        },
+        renderResult(result, options, theme, context) {
+          return nativeRenderResult?.(result as never, options, theme as never, context as never);
+        },
+      };
+    }
     registerRuntimeTool(pi, tool, getConfig, aggregateProjection);
+  };
 
   const isExternallyOwnedBuiltInTool = (toolName: BuiltInToolOverrideName): boolean => {
     const allTools = tryGetAllTools(pi, "Built-in tool override ownership discovery unavailable during extension load; registering renderer for pre-bind history rendering.");

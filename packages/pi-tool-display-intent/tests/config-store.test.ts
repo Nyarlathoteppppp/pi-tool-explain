@@ -279,6 +279,19 @@ test("v2 serialization is sparse and round-trips the effective config", () => {
 	});
 });
 
+test("native tool style survives v2 config load and save", () => {
+	const config = normalizeToolDisplayConfig({ ...DEFAULT_TOOL_DISPLAY_CONFIG, toolCallStyle: "native" });
+	const serialized = serializeToolDisplayConfigV2(config);
+	assert.deepEqual(serialized.toolCalls, { style: "native" });
+	withTempDir("pi-tool-display-native-config-", (dir) => {
+		const file = join(dir, "config.json");
+		writeFileSync(file, JSON.stringify(serialized), "utf8");
+		const loaded = loadToolDisplayConfig(file);
+		assert.equal(loaded.notice, undefined);
+		assert.equal(loaded.config.toolCallStyle, "native");
+	});
+});
+
 test("default full aggregation stays sparse while explicit passthrough exceptions round-trip", () => {
 	const defaults = serializeToolDisplayConfigV2(DEFAULT_TOOL_DISPLAY_CONFIG);
 	assert.equal(defaults.tools, undefined);

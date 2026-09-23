@@ -11,7 +11,7 @@ export const DIFF_COLLAPSED_MODES = ["body", "summary"] as const;
 export const TOOL_INTENT_LANGUAGES = ["auto", "zh-CN", "en"] as const;
 export const TOOL_CALL_LAYOUTS = ["individual", "aggregate"] as const;
 export const EXPANDED_TIMELINES = ["flat", "turns"] as const;
-export const TOOL_CALL_STYLES = ["compact", "claude"] as const;
+export const TOOL_CALL_STYLES = ["compact", "claude", "native"] as const;
 export const TOOL_DISPLAY_CONFIG_VERSION = 2 as const;
 export const TOOL_DISPLAY_CONFIG_SCHEMA_URL =
 	"https://raw.githubusercontent.com/zhcsyncer/pi-extensions/main/packages/pi-tool-display-intent/config/config.schema.json";

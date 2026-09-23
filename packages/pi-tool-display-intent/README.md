@@ -19,6 +19,7 @@ The current model writes `displaySummary` in the normal tool call. This extensio
 ## Features
 
 - Bash always asks the current model for a `displaySummary` intent. Other built-ins keep deterministic targets only.
+- Optional `native` style: `read`, `bash`, `edit`, `write`, `grep`, `find`, and `ls` keep Pi's original call and result display with one short explanation line under each call.
 - Claude-style rows: status mark, `Name(target)`, and indented results.
 - Optional `aggregate` layout: one **Run** ledger per user request, including Agent and consult by default.
 - Fullscreen mouse support: click a collapsed Run block to expand that run, click its expanded summary to collapse it, and inspect individual call results without rerunning tools.
@@ -31,9 +32,17 @@ Do not load `pi-tool-display`, `pi-tool-display-summary`, and this extension tog
 
 ## Install
 
+To use this fork's code, install the subpackage from the repository root:
+
+```bash
+pnpm install --frozen-lockfile
+pi install "$PWD/packages/pi-tool-display-intent"
+```
+
+The upstream npm package below does not yet contain this fork's `native` implementation:
+
 ```bash
 pi install npm:@zhcsyncer/pi-tool-display-intent
-pi install npm:@zhcsyncer/pi-extensions
 ```
 
 Then restart Pi or run `/reload`.
@@ -46,7 +55,7 @@ Then restart Pi or run `/reload`.
 /tools individual
 ```
 
-Empty `/tools` opens the settings panel. Switching layout asks to reload this session, then saves and reloads. Bash intent language is available in both layouts and applies after `/reload`; layout-specific display knobs stay in the panel.
+Empty `/tools` opens the settings panel. In `individual` layout, choose **Tool call style → native**, then run `/reload`. Switching layout asks to reload this session, then saves and reloads. Bash intent language is available in both layouts and applies after `/reload`; layout-specific display knobs stay in the panel.
 
 ## Layouts
 
@@ -124,6 +133,7 @@ Open `/tools` or edit the example at [`config/config.example.json`](./config/con
 | What you change | Effect |
 |---|---|
 | `toolCalls.layout` | `individual` or `aggregate` |
+| `toolCalls.style` | `claude` (default), `compact`, or `native` (individual layout) |
 | `toolCalls.expandedTimeline` | `flat` per-call Ctrl+O rows, or `turns` grouped by agent turn (aggregate only; no reload) |
 | `toolCalls.showContextGrowth` | Show `ctx` run totals and turn badges; default `false` (aggregate only; no reload) |
 | `results.mode` | `compact`, `summary`, or `preview` |
@@ -132,7 +142,7 @@ Open `/tools` or edit the example at [`config/config.example.json`](./config/con
 | `diff.collapsedMode` | `body` preview, or `summary` stats only (individual tool rows) |
 | `tools.passthrough` | Explicit tools that keep their original renderer; default `[]` |
 
-Older `toolCalls.style` and `transcript.userMessageStyle` settings are ignored.
+Set `toolCalls.style` to `native` in `/tools` or the config JSON to keep Pi's built-in call and result display and add one short intent line beside each owned built-in call. `compact` and `claude` remain available; `claude` is the default. Native style applies to the `individual` layout after `/reload`. The older `transcript.userMessageStyle` setting is ignored.
 
 ## Custom tools
 

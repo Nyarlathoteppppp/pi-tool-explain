@@ -9,6 +9,7 @@ import {
 	RESULT_DISPLAY_MODES,
 	EXPANDED_TIMELINES,
 	TOOL_CALL_LAYOUTS,
+	TOOL_CALL_STYLES,
 	TOOL_INTENT_LANGUAGES,
 	type ToolDisplayConfig,
 } from "./types.js";
@@ -54,6 +55,7 @@ export function getToolDisplayArgumentCompletions(argumentPrefix: string): Array
 	].filter((option) => option.value.startsWith(prefix));
 }
 const INDIVIDUAL_ONLY_SETTING_IDS = new Set([
+	"toolCallStyle",
 	"resultMode",
 	"previewRows",
 	"bashCommandPreviewRows",
@@ -121,6 +123,27 @@ export function buildInspectorSettings(
 			]),
 			inspectorPath: configPath,
 			searchTerms: ["layout", "individual", "aggregate", "tools", "summary", "reload"],
+		},
+		{
+			id: "toolCallStyle",
+			label: "Tool call style",
+			currentValue: config.toolCallStyle,
+			values: TOOL_CALL_STYLES,
+			inspectorTitle: "Tool Call Style",
+			inspectorSummary: [
+				"native keeps Pi's built-in call and result renderers and adds one short intent line to the call.",
+				"compact and claude retain their existing presentation. Changing the style requires /reload.",
+			],
+			inspectorOptions: [
+				"claude — current default presentation",
+				"compact — compact per-tool presentation",
+				"native — Pi's built-in presentation with one intent line",
+			],
+			inspectorAdvanced: buildAdvancedNotes(config, capabilities, [
+				"Only individually rendered built-in tools use Pi's native renderers. Tool execution and custom tool APIs are unchanged.",
+			]),
+			inspectorPath: configPath,
+			searchTerms: ["style", "native", "compact", "claude", "Pi"],
 		},
 		{
 			id: "toolIntentLanguage",
@@ -322,6 +345,8 @@ export function applySetting(config: ToolDisplayConfig, id: string, value: strin
 	switch (id) {
 		case "toolCallLayout":
 			return { ...config, toolCallLayout: value as ToolDisplayConfig["toolCallLayout"] };
+		case "toolCallStyle":
+			return { ...config, toolCallStyle: value as ToolDisplayConfig["toolCallStyle"] };
 		case "toolIntentLanguage":
 			return {
 				...config,

@@ -19,6 +19,7 @@ $ pnpm test — 验证 extension 测试套件
 ## 功能
 
 - 只有 bash 会向当前模型要 `displaySummary` 意图。其它内置工具只用确定性 target。
+- 可选 `native`：`read`、`bash`、`edit`、`write`、`grep`、`find`、`ls` 保留 Pi 原生调用与结果展示，在调用下方增加一行简短说明。
 - Claude 风格：状态标记、`Name(target)`、缩进结果。
 - 可选 `aggregate`：一次用户请求收成一条 **Run** 账本，默认也收纳 Agent 和 consult。
 - Fullscreen 鼠标交互：点击收起的 Run 内容区展开本账本，点击展开后的摘要区收起；工具行可查看结果，不重新执行工具。
@@ -31,9 +32,17 @@ $ pnpm test — 验证 extension 测试套件
 
 ## 安装
 
+使用本 fork 的代码，从仓库根目录安装子包：
+
+```bash
+pnpm install --frozen-lockfile
+pi install "$PWD/packages/pi-tool-display-intent"
+```
+
+下面是上游 npm 包；它尚不包含本 fork 的 `native` 实现：
+
 ```bash
 pi install npm:@zhcsyncer/pi-tool-display-intent
-pi install npm:@zhcsyncer/pi-extensions
 ```
 
 然后重启 Pi 或执行 `/reload`。
@@ -46,7 +55,7 @@ pi install npm:@zhcsyncer/pi-extensions
 /tools individual
 ```
 
-空的 `/tools` 打开设置面板。切布局会先确认再保存并 reload。两种布局都能配置 bash intent 语言，修改后经 `/reload` 生效；其它展示旋钮按布局显示。
+空的 `/tools` 打开设置面板。在 `individual` 布局中选择 **Tool call style → native**，然后 `/reload`。切布局会先确认再保存并 reload。两种布局都能配置 bash intent 语言，修改后经 `/reload` 生效；其它展示旋钮按布局显示。
 
 ## 布局
 
@@ -124,6 +133,7 @@ took 18s · ctx ≈+3.2k · tok ↑… ↓…
 | 改什么 | 效果 |
 |---|---|
 | `toolCalls.layout` | `individual` 或 `aggregate` |
+| `toolCalls.style` | `claude`（默认）、`compact` 或 `native`（individual 布局） |
 | `toolCalls.expandedTimeline` | `flat` 展开逐条，或 `turns` 按 agent turn 分组（仅 aggregate，不用 reload） |
 | `toolCalls.showContextGrowth` | 显示 `ctx` run 总计与逐拍标记；默认 `false`（仅 aggregate，不用 reload） |
 | `results.mode` | `compact`、`summary` 或 `preview` |
@@ -132,7 +142,7 @@ took 18s · ctx ≈+3.2k · tok ↑… ↓…
 | `diff.collapsedMode` | `body` 预览，或只要 `summary` 统计（individual 工具行） |
 | `tools.passthrough` | 显式保留原 renderer 的工具，默认 `[]` |
 
-旧的 `toolCalls.style` 和 `transcript.userMessageStyle` 会被丢掉。
+在 `/tools` 或配置 JSON 中设置 `toolCalls.style: "native"`，可保留 Pi 内置的工具调用与结果显示，并在每次由本扩展接管的内置工具调用旁增加一行简短意图。`compact` 和 `claude` 仍可使用；默认是 `claude`。原生样式适用于 `individual` 布局，修改后运行 `/reload`。旧的 `transcript.userMessageStyle` 仍会被忽略。
 
 ## 自定义工具
 

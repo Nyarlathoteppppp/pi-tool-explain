@@ -58,7 +58,9 @@ test("bundled JSON Schema exposes only the reviewed public field names", () => {
 	const layout = schema.properties?.toolCalls?.properties?.layout as { enum?: string[]; default?: string } | undefined;
 	assert.deepEqual(layout?.enum, ["individual", "aggregate"]);
 	assert.equal(layout?.default, "individual");
-	assert.equal(schema.properties?.toolCalls?.properties?.style, undefined);
+	const style = schema.properties?.toolCalls?.properties?.style as { enum?: string[]; default?: string } | undefined;
+	assert.deepEqual(style?.enum, ["compact", "claude", "native"]);
+	assert.equal(style?.default, "claude");
 	const intent = schema.properties?.intent as { properties?: Record<string, unknown> } | undefined;
 	assert.equal(intent?.properties?.enabled, undefined);
 	assert.ok(intent?.properties?.language);
