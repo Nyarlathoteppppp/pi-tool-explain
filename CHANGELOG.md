@@ -1,290 +1,78 @@
-# @zhcsyncer/pi-extensions
+# Changelog
 
-## 1.0.1
-
-### Patch Changes
-
-- 2f97f4c: Persisted subagents that hit retry or context overflow on Pi 0.87 can be resumed instead of being rejected as corrupt.
-
-## 1.0.0
-
-### Major Changes
-
-- 1192e34: Search Hub keeps Exa, Tavily, Firecrawl, and Parallel, and adds OpenAI Codex and Grok search through Pi `/login` hosted web search (defaults: `gpt-5.6-luna`, `grok-4.3`). After a hosted backend hits a subscription usage limit, Search Hub skips it for 5 hours. Tavily and Firecrawl keys cache remaining quota locally; exhausted keys are skipped until the next billing cycle. Exa and Parallel keys that hit quota are skipped for 24 hours. `/search-hub status` shows this ledger. Configure with `/search-hub setup`. `web_search` no longer accepts `backend`; combine is model-only and off by default. `web_read` no longer accepts `reader`. Old backend names are no longer valid, and Firecrawl remains the keyless search fallback.
+## 0.10.1
 
 ### Patch Changes
 
-- 1192e34: Glance Git Enabled now stops git reads, fetch, `/diff`, and worktree counts, not only the status segment.
-- 1192e34: The working row shows `requesting` as soon as a request is in flight, highlights `responding` while output streams, and shows elapsed time after three seconds instead of one minute.
-- 1192e34: Require Pi 0.86 or later. These packages follow the 0.86 transcript and no longer support 0.85.
-- 1192e34: Search Hub draws its own Claude-style tool rows and no longer needs pi-tool-display-intent.
-- 1192e34: Stop injecting live Todo state into the model prompt. No-op updates now return "No changes; state already matches" without writing a checkpoint.
 - 1192e34: Aggregate Run rows use one ● marker. It breathes warning brightness until the turn settles, then success. It no longer flips between ◐ and ✓ between tool calls.
 
-## 0.32.3
-
-### Patch Changes
-
-- 62dbd33: The Ollama Cloud quota card now supports the new credit-based plans that report only a monthly usage window instead of session and weekly windows. Any of the three windows can now be shown on its own, the monthly window note shows recent spend when the API reports it, and the quota dashboard lists the top five per-model request counts under the Ollama monthly window.
-
-## 0.32.2
-
-### Patch Changes
-
-- 100ce43: Recap no longer saves a long unstructured model dump as the recap: short plain-text replies still work, but oversized echoes fail instead of filling the widget and deriving a truncated title. The recap system prompt now says not to continue the conversation or copy it. Generated time in the widget uses a 24-hour local clock.
-- a765209: Fix tmux name sync failing when window-level automatic-rename is unset. Query the option with `show-window-options -v` because tmux 3.4 rejects `-q` on that command, treat empty output as unset, and restore by unsetting the window option with `-u` instead of writing an empty value.
-
-## 0.32.1
-
-### Patch Changes
-
-- 65466be: `/recap-config` now covers every recap option, including choosing a model from the currently enabled list. Fallback stays hidden while the model is `current`, and recap warns if a chosen model is missing and it falls back.
-- 65466be: Recap no longer fails with 400 on OpenCode / OpenCode Go due to a missing `x-opencode-session` header. Out-of-band recap calls now go through Pi's model registry so they use the same authentication and custom endpoints as the main session.
-- 65466be: Session-name handling is one setting again. `off` turns sync off; `if-empty`, `if-empty-or-auto`, and `always` keep their previous meaning.
-- 65466be: Recap config is now thinner: `/recap` is always available, and `/recap-config` only keeps auto recap, idle wait, model, language, whether to write the title into the session name (on = do not overwrite a manual name), plus multiplexer enablement and template.
-
-## 0.32.0
+## 0.10.0
 
 ### Minor Changes
 
-- f3b8c32: Add a Tokens cache hit-rate option that keeps the percentage visible in narrow layouts, while preserving existing cache settings and the auto default. Reply speed now measures output tokens over observed server inference time, including thinking and writing but excluding local tool execution, pre-response waiting, and blocking UI prompts when supported by Pi.
-
-### Patch Changes
-
-- f3b8c32: Warn when a Search Hub backend or reader starts failing repeatedly. Local call outcomes are stored only for that check and are not used as remaining quota.
-- f3b8c32: Improve subagent result delivery and continuation. Background notifications carry final reports within a shared 16 KiB UTF-8 message budget, explicitly marking truncation with a full-result retrieval path. Steering completed or soft-limit agents continues the same context in the background; explicit resume supports foreground and background execution with normal concurrency, waiting, and cancellation semantics. Eligible persisted terminal sessions can recover with their original execution configuration; missing recovery prerequisites fail explicitly instead of starting fresh. Failed or stopped continuations retain the previous completed report, clearly labeled as historical rather than the current result, even when the child conversation file cannot be opened. Failed or stopped agents still require explicit retry, and interrupted in-flight work is not replayed after a crash. Fence stale completions across resumed runs and clarify these contracts in streamlined bilingual documentation.
-- f3b8c32: Show collected subagent tokens and cost in Pi native session statistics and Glance by default. Foreground Agent results and completed background result retrievals report each agent's unreported lifetime spend once, including resumed sessions. Keep pinned pi-meter observers recording child messages, while excluding duplicate parent usage rollups from live capture and history imports. Native rollups require Pi 0.81.0 or newer and can be disabled with reportUsage.
-- f3b8c32: Apply scopeModels to explicit cross-extension RPC model selections, close the conversation viewer with Ctrl+C, and display the child session's actual model and thinking level rather than requested values. Keep foreground as the default; no workflow or handle-based delegation features are added.
-
-## 0.31.0
-
-### Minor Changes
-
-- 7b6a072: Add pi-consult, a side-call advisor primitive with consult({ why }), a watchdog, optional dual-path panel, and a local behavior log.
-
-### Patch Changes
-
-- 7b6a072: Link every Consult event to its transcript tool call, record blocked and failed outcomes, and distinguish whether adopted advice changed or confirmed the executor's direction.
-- 7b6a072: Limit proactive Consult calls to explicit advisor requests, consequential unresolved choices, or genuinely stuck approaches, and make evidence-based rejection a valid outcome.
-- 7b6a072: Follow the user's language in advisor summaries and render Markdown in expanded Consult results while keeping collapsed previews plain.
-- 7b6a072: Stream Consult progress as connecting, thinking, or writing with an approximate output-token count, then show exact input, output, and total tokens after completion without cache or cost UI.
-- 7b6a072: Rename the advisor budget to perRun with a default of three, retain perTurn as a legacy alias, and distinguish blocked, failed, and cancelled Consult results in the TUI.
-- 7b6a072: Replace Consult verdicts with recommend / confirm / revise / stop, rename triggers to onDemand / watchdog, and show trigger, model:effort, exact tokens, retries, and duration on one metadata line in both collapsed and expanded results.
-- 7b6a072: Show `/consult status` in a temporary dashboard instead of emitting status text into the transcript.
-- 7b6a072: Account advisor retries, fanout, cache tokens, and cost through Consult tool-result usage so Pi totals include it and pi-meter attributes it to the advisor models.
-- 7b6a072: Raise the default watchdog threshold to five and prevent stale evidence from injecting a second Consult steer when Consult itself finishes.
-- 7b6a072: Make `/usage import` report scanned files, parsed records, additions, known duplicates, skipped messages, and whether a repeated import changed the ledger.
-- 7b6a072: Harden consult side calls by preserving user images, requiring consult to run as a standalone prerequisite, enforcing budgets under parallel calls, and making shared event-log updates append-only.
-
-## 0.30.0
-
-### Minor Changes
-
+- 7b516df: Support clicking an entire Tools title row to expand or collapse one run in Pi 0.85+ fullscreen mode, while Ctrl+O continues to control the whole transcript. Expanded tool rows open a read-only Result/Args viewer with advanced Metadata, scrolling and structured parameter/metadata inspection. Long steers use bounded head/tail previews with a clickable omission row. Viewing never reruns a tool or changes Session messages.
+- 7b516df: Add an opt-in Context growth setting to `/tools`. Aggregate receipts show `ctx` growth separately from token consumption, and expanded turn headers attribute reported input changes to the preceding turn. Unconfirmed turns and totals containing local estimates use `≈`; known context boundaries or missing data show an unavailable run total instead of a misleading sum. Only tool-bearing turns may show context footers; ordinary replies remain free of ledger chrome. Tool execution and Session messages are unchanged.
 - 7b516df: Fold visible custom messages, including background task completion notices, into Run in their original transcript order. Preserve the original renderer and native interactions when expanded, keep hidden messages hidden, and show message-only segments without inventing tool calls. Notifications after a final answer start a new segment rather than being moved back to their dispatching run. Restore aggregation for history already rendered before extension reload completes.
+- 7b516df: Keep the aggregate title in view when locally expanding a Tools run in compatible Pi fullscreen mode. When an expanded run's title scrolls out of view, show a fixed collapse control above the editor that closes only that run and returns to its title, without taking keyboard focus or using an overlay.
+- 7b516df: Refine the read-only viewer with typed Args rows, multiline text blocks, JSON colors and conservative Markdown presentation. Keep only Result and Args as primary tabs, move Metadata behind the advanced entry, and provide a Raw switch while retaining terminal-control filtering and safety limits. Edit diffs appear directly in Result instead of a separate tab. Compact titles, right-aligned status and scroll positions, and notices only for actual transformations reduce visual clutter.
+- 7b516df: Expand the clickable area to the whole collapsed Tools block and the expanded title/summary area, while preserving per-call detail inspection. Successful Edit calls with returned diff data show the diff directly in Result using the existing line-numbered renderer and the configured layout and wrapping. Raw return text and arguments remain accessible; failed edits and missing diff data show the ordinary result.
+- 7b516df: Rename the aggregate Tools header to Run and aggregate Agent/consult by default, retaining explicitly configured passthrough exceptions. Generic call previews now show a couple identifying values without keys or payloads; Agent calls use compact task titles and distinguish background dispatch receipts from completed foreground work without modifying subagents. Fix collapse-widget layout feedback at the transcript bottom, including same-height streaming or timing updates, while preserving normal scrolling and focus.
 
 ### Patch Changes
 
 - 7b516df: In aggregate layout, long bash rows show intent and size instead of the script body, and each call row right-aligns its duration (plus end time after it finishes).
 - 7b516df: Keep the aggregate Tools ledger a bounded audit: custom tools show a deterministic target, image reads stay in the ledger, and long bash/tool-call rows wrap with a preview instead of dumping scripts or failing open.
+- 7b516df: Aggregate Ctrl+O can group the timeline by agent turn. The default stays the flat per-call view; turn `/tools` Expanded timeline to `turns` without reloading.
+- 7b516df: Keep expanded assistant narration at its established first-line inset, align continuation lines with the same marker-column spacing, and remove right-side padding that pushes short rows to the terminal edge. Reserve frame width before Markdown layout to preserve wrapped text without spurious truncation markers, while retaining intentional paragraph and code-block blank lines.
+- 7b516df: Align explicit passthrough tools with the Run ledger's content inset while preserving their native renderer, expansion and interactions. Reserve the inset before layout and translate mouse coordinates so clicks, focus and drag capture still reach the original components.
+- 7b516df: Aggregate keeps a blank line after the user prompt and passthrough tools; only the final reply under Tools omits it. Ctrl+O also leaves a framed gap before mid-turn narration. `/tools` now Tab-completes `aggregate` and `individual`.
+- 7b516df: Only bash asks the model for intent. The intent.enabled switch is gone; language and maxLength stay. Search Hub no longer requires displaySummary.
+- 7b516df: Show safe, bounded top-level argument previews for generic custom tools instead of only an argument count, while redacting credential-like fields and values.
+- 7b516df: Automatically wrap long lines in the read-only detail viewer so tool results, parameters, metadata and steer messages can be read by vertical scrolling. Reflow on resize preserves the source text and keeps the reading position near the same content.
+- 7b516df: Preserve credential values in the read-only inspector, render Markdown files as Markdown, and highlight Bash command arguments. Edit inspectors follow the global diff layout; Write stays single-column and explicitly shows written content as additions rather than an inferred overwrite delta. Both share the indicator and wrapping settings exposed in aggregate mode. Long Bash commands stay out of ledger parentheses unless the entire target fits one row, and ordinary replies no longer receive context-growth footers. Terminal-control filtering and bounded viewing remain in place.
 - 7b516df: In aggregate layout, keep pre-tool narration as ordinary assistant text when the turn only has passthrough tools and no Tools ledger.
 - 7b516df: In aggregate layout, keep pre-tool narration visible when that assistant message only has passthrough tools such as Consult, instead of hiding it until expand.
-- 7b516df: Prevent Glance's background `origin/main` fetch from opening interactive Git, SSH host-key, or credential prompts that can corrupt fullscreen terminal input.
-- 7b516df: Route Search Hub credential, configuration and Exa usage warnings through deduplicated Pi notifications instead of raw terminal output. Retain diagnostics in successful tool-result details, including headless runs, without changing provider fallback behavior. Strip terminal controls and redact common credential formats before displaying diagnostics, and avoid exposing failed credential shell commands.
+- 7b516df: Restore bounded multiline tool-call targets in aggregate ledgers after timing support made them single-line, and show failed-call details on indented continuation rows.
+- 7b516df: Right-align the fixed Run collapse control and keep it first among above-editor widgets, without changing other widgets' relative order. Match the mouse hit area to the visible control so the empty left side remains non-interactive.
+- 7b516df: Restore Run title anchoring and the fixed collapse control after reload when child sessions have used the extension. Bind shared renderer hooks to the UI host, release projections on all shutdown reasons, and hand off stale module dispatch without losing outer renderer wrappers or letting delayed cleanup disable the new session.
 - 7b516df: Always use Claude-style tool chrome. Rename `/tool-display-intent` to `/tools`; empty args still open settings, and layout changes confirm then reload the session.
+- 7b516df: Add Bash intent language to the `/tools` settings panel in both layouts, with explicit guidance that auto is best-effort and changes apply after `/reload`.
+- 7b516df: Always show Write content in a single-column additions view, even when the global diff layout is split or automatic. Keep the configured indicators and wrapping, while Edit continues to follow the global diff layout.
 
-## 0.29.0
-
-### Minor Changes
-
-- 82238c7: Make Fast Mode defaults per model. `/fast default` sets only the current model's startup default and turns this session's switch to match. Unconfigured models start off. Switching models follows that model's in-memory switch. Old global `enabled` and boolean maps are migrated on startup with a warning; a former global ON does not enable every model.
-
-### Patch Changes
-
-- 82238c7: Stop Fast Mode toggles from adding a chat notification. The footer now shows only `⚡ FAST` or dim `fast`.
-
-## 0.28.0
-
-### Minor Changes
-
-- 8027951: Show Codex banked weekly rate-limit resets in `/usage quota` and the Codex footer, and replace the word "stale" with snapshot age.
-
-## 0.27.1
-
-### Patch Changes
-
-- e1cbae6: Keep Fast Mode aligned with Pi 0.84.3: preserve tool choices in Responses wrappers and use response-aware priority billing for built-in xAI models.
-
-## 0.27.0
-
-### Minor Changes
-
-- e037dbe: Upgrade the in-process subagent spawn contract to protocol v3 for orchestrator extensions. Callers can provide an inline role, own completion delivery, correlate lifecycle events, inspect requested/effective model and thinking, discover the runtime concurrency limit, and optionally set per-spawn `graceTurns` after the soft max-turn steer. A side-effect-free `@zhcsyncer/pi-subagents/runtime` entry now exposes the same AgentManager/runAgent execution core to dependent packages without registering Agent tools, commands, scheduling, widgets, or FleetView. Ordinary Agent tools, named/project agents, fallback behavior, completion notifications, FleetView, scheduling, and the global five-turn grace default keep their existing behavior when the new fields are omitted.
-- e037dbe: Persist ordinary subagents as parent-linked Pi sessions by default so `/resume` can open their complete conversations, and add a finished-agent history in `/agents` that reopens retained or disk-only runs in the existing brief overlay. Caller-owned terminal events expose the persisted `sessionFile`, and the embedded runtime writes the same finished parent record as the external extension path so orchestrators retain `/agents` history without activating the full extension. Add `rememberAgents` for restoring memory-only defaults. Port the `isolation: "off" | "worktree"` shape with `off` first, and add a repository `worktreeIsolation` capability switch that defaults off in this fork: disabled repositories remove the Agent schema/prose and downgrade tool, agent-file, scheduler, and RPC worktree requests to the real checkout, while enabled worktree creation remains strict.
-- e037dbe: Add `pinnedExtensions` so trusted observer extensions (such as pi-meter) stay loaded in every subagent session, including isolated runs, without exposing their tools. Only the user-owned global config may grant observer names; project config can use `[]` to opt out, while non-empty project pins are ignored with a warning so checked-in repositories cannot authorize their own handlers.
-- e037dbe: Render Agent / get_subagent_result / steer_subagent transcript rows as unboxed Claude Code Task chrome (`● Type(description)` + a single `⎿` outcome clerk). Collapsed rows keep outcome stats and the resolved model; spawn config, cost, transcript path, and worktree details move to the expanded footer.
-
-### Patch Changes
-
-- e037dbe: Document the standalone `@zhcsyncer/pi-adversarial-review` package in the repository README. It is published independently and is not included in the root bundle.
-
-## 0.26.0
-
-### Minor Changes
-
-- 1569e96: Add `/herdr-worktree cleanup` to remove the current linked Herdr worktree. By default it also deletes the local branch; `--keep-branch` keeps the branch. Remote branches are left untouched.
-- 1569e96: Add `/herdr-worktree start` to distill an executable plan from the current session, then create a linked worktree and start Pi with only that plan.
-
-## 0.25.1
-
-### Patch Changes
-
-- 4f4fd57: Keep cache write visible in the `/usage` dashboard at typical terminal widths.
-- 4f4fd57: Stop `/usage import` from double-counting turns already captured live, and collapse those duplicate ledger rows.
-
-## 0.25.0
-
-### Minor Changes
-
-- 5ebdcf0: Let other extensions register a quota source. The footer follows the current model only.
-
-## 0.24.0
+## 0.9.0
 
 ### Minor Changes
 
 - c7bf6cf: Keep mid-turn steers on the same aggregate Tools ledger. While the turn is running, pin each steer’s first line under the header; after it settles, leave one `↳ N steers` reminder under the title instead of repeating the count in parentheses. `Ctrl+O` restores each `↳` in place, highlighted, with framed gaps instead of opening a second book.
-- c7bf6cf: Show SuperGrok at 0% used when the weekly percent is omitted, keep the footer on the current model's quota only, and let `/usage footer` switch local spend between rolling and calendar windows.
 
-## 0.23.0
-
-### Minor Changes
-
-- 0c23485: Add the standalone `@zhcsyncer/pi-herdr-companion` package with immutable runtime context and mode-agnostic process/blocked support that remain strictly silent outside Herdr or with incomplete caller identity, while `/btw` and settings stay TUI-only; branch-safe `herdr_process` panes whose server-scoped terminal identity follows moves across Herdr tabs and workspaces, whose lifecycle cleanup verifies live terminal identity and leaves visible orphans rather than risk closing an unowned Pane, whose provisional starts remain visible and shutdown-cancellable, and whose TUI adds a navigable below-editor process widget plus compact action-aware tool rendering; private self-deleting Bash command scripts on POSIX that prevent Fish or another interactive pane shell from reinterpreting model-authored Bash, a Windows-safe raw default, and an explicit raw-pane escape hatch; ephemeral `/btw` side threads with immediate question submission, inherited parent model/thinking, Pi-default tools, the configured process split direction, and bounded fresh-shell retries, cache-prefix replay with session-neutral parent/child BTW guidance that preserves child handlers, atomic first-session binding, uniquely named candidate locks, conservative stale cleanup, request-deduplicated parent recovery, and acknowledgement-gated child closure; a unified runtime/process/blocked `/herdr-config` TUI at the standard `extension-data/pi-herdr-companion/config.json` path; and generic event/tool blocked rules that preserve unchanged in-flight state across configuration saves. The Subagents FleetView and the Process Widget coordinate below-editor navigation ownership so FleetView does not steal arrow keys after the process list is activated. The root tarball embeds the package sources for release consistency but does not auto-enable the extension.
-
-## 0.22.0
-
-### Minor Changes
-
-- 1768c9d: Glance 输入框增加单槽暂存：快捷键收起/拿回，边框提示未取回内容，同一会话的 /reload 与 resume 后空框自动倒回。
+## 0.8.1
 
 ### Patch Changes
 
 - 1768c9d: Keep the aggregate Tools ledger on the host session when Explore or another in-process session starts, and stop treating thinking as mid-turn narration or a final answer.
 - 1768c9d: Render the in-progress aggregate Tools note as Markdown, keeping the three-line pin.
 - 1768c9d: Keep a blank row between the aggregate user prompt and a direct final answer, and only drop it when a Tools ledger is already providing that gap.
-- 1768c9d: Consolidate local summary, quota visibility, and used/remaining display under `/usage footer`, and remove the former direct setting arguments.
-- 1768c9d: Idle TUI sessions pick up shared quota and local spend from disk on a slow timer, without calling subscription APIs.
-- 1768c9d: Show Ollama Cloud remaining in `/usage quota` and the footer for `ollama-cloud` models.
-- 1768c9d: Open `/usage quota` in a temporary TUI dashboard so the report does not remain in the chat transcript.
-- 1768c9d: Summarize unsigned-in quota providers at the bottom of `/usage quota` instead of treating each missing login as a warning.
-- 1768c9d: Show a muted "no quota window" hint in the footer when the current model has no subscription remaining.
 - 1768c9d: Remove the Thinking label that rewrote stored reasoning text. Existing `transcript.thinkingLabel` settings are dropped.
 
-## 0.21.0
+## 0.8.0
 
 ### Minor Changes
 
 - 4eff439: Add the optional `toolCalls.layout: "aggregate"` Tools view, with gallery and README screenshots of the collapsed, expanded, and failed ledgers. Every registered built-in, custom, MCP, and late-loaded tool now contributes to one branch-aware summary per user request. The collapsed header shows call and assistant-turn counts. While the turn is running, the latest assistant note stays pinned under the header, above the tool rows, without using a tool slot; after the turn settles, every assistant note hides and a muted receipt under the header shows duration, tokens, cache, and local completion time. Successful calls remain as replaceable `done` rows before a settled grace-period fold, collapsed failures stay count-only, and `Ctrl+O` restores the original timeline of notes plus one target/status summary per call. Aggregate always renders user prompts as a compact accent-gutter block with vertical padding and hides thinking labels; boxed-user and thinking-label settings stay retained but inactive. `Agent` keeps its original renderer by default, images fail open, collapsed `Thinking...` placeholders are stripped, no file-change statistics are inferred or persisted, and switching back to `individual` restores the original renderers over unchanged raw session calls/results.
-- 4eff439: Show a separately highlighted `main↓N` when the current branch is behind the last local `origin/main` snapshot, without changing upstream tracking. Hide it when upstream `↓N` is already showing that same lag. Hide the dirty lamp when Working Tree file counts are already visible in the Git status or the bottom-right border; conflict markers stay. Add a Glance screenshot for the pi.dev package gallery.
 
-## 0.20.0
-
-### Minor Changes
-
-- a16d618: Add `@zhcsyncer/pi-meter`: one `/usage` command for local spend and Claude / Codex / SuperGrok remaining. It combines `pi-tracker` and `@pi-plugins/usage`; disable the latter because both register `/usage`.
-
-## 0.19.1
+## 0.7.1
 
 ### Patch Changes
 
-- 2d59426: Load Fast Mode without importing `@earendil-works/pi-ai/api/simple-options`, which Pi's extension loader cannot resolve.
-
-## 0.19.0
-
-### Minor Changes
-
-- 4099afa: Bound Todo to the current execution cycle: use mutation-only V2 replay checkpoints, automatically roll terminal cycles forward without reusing IDs, keep default lists focused on active work, and inject a compact active-state summary into each agent run.
-
-  Move destructive reset out of the model tool and into the confirmed `/todo` TUI flow, with active-work warnings, branch-scoped persistence, legacy V1 replay compatibility, and immediate widget refresh.
-
-  Reject singleton Todo cycles at runtime: an empty or terminal cycle must start with an atomic multi-item batch. Risk, duration, or importance cannot justify a one-task plan; one-milestone work runs directly without filler tasks.
-
-  Remove dependency-graph fields, validation, deletion guards, and UI from the current Todo contract. Todo is now an ordered serial execution focus for surviving context growth and compaction; legacy checkpoints remain replay-compatible while retired dependency data is discarded.
-
-- 4099afa: Add a theme-aware Git Working Tree summary that defaults into the Git status line, with an optional bottom-right border placement, tracked diff statistics, event-driven refresh with polling fallback, and a `/diff` revdiff review handoff that returns annotations to the editor for confirmation.
-
-## 0.18.0
-
-### Minor Changes
-
-- 981974e: Add same-model Fast / Priority scheduling for OpenAI and xAI. `/fast` and Ctrl+F toggle an in-memory switch only; `/fast default` writes `settings.json` without changing the current switch. The extension is also embedded in the root bundle.
-
-## 0.17.2
-
-### Patch Changes
-
-- f3582d5: Derive a bounded fallback title from valid recap text with a persisted widget warning, and reject truncated, failed, empty, or malformed JSON-like model output without saving partial recap state.
-
-## 0.17.1
-
-### Patch Changes
-
-- eef62a3: Deliver manually launched background Agent completions as `steer` messages so current-task results reach the parent before its next model call instead of starving behind a long tool loop. Scheduled and cross-extension RPC completions retain detached `followUp` delivery, foreground results remain inline, and the Agent contract now requires foreground for prerequisite results plus genuinely disjoint background work without repeating delegated evidence collection.
-
-## 0.17.0
-
-### Minor Changes
-
-- caf3e9c: Add a switchable, theme-aware Claude-inspired working indicator to Glance, with automatic activity, current-cycle output estimates, human-readable elapsed time with long-cycle emphasis, a first-level settings entry, and parent-preserving pane navigation.
-
-## 0.16.1
-
-### Patch Changes
-
-- a43cc4c: Improve subagent runtime UI with an honest `working…` fallback, delayed coarse activity phases that do not flicker through exact steps, readable accented durations, and lifetime input/output/cache/cost breakdowns that keep current-context utilization and the existing compact total semantics distinct.
-
-## 0.16.0
-
-### Minor Changes
-
-- 1d5ad9e: Replace the duplicate `/todos` list command with a `/todo` visual-settings TUI, add atomically persisted widget icon and maximum-height controls, and keep active work visible through priority-aware overflow rendering.
-
-### Patch Changes
-
-- 1d5ad9e: Prioritize Glance's dynamic top-border status over the workspace title on narrow terminals while preserving Bash and scroll indicators as the highest-priority interaction cues.
-
-## 0.15.2
-
-### Patch Changes
-
-- 9b1a137: Unify Todo, Ask User Question, and Subagents configuration under each extension's `extension-data/<extension-id>/` directory. Existing global and project files migrate atomically with canonical-path precedence, semantic verification, retained conflicts, and de-duplicated warnings; Subagents runtime resources remain in their existing locations, and Todo now ships aligned English and Simplified Chinese documentation.
-
-## 0.15.1
-
-### Patch Changes
-
-- 44c7eee: Publish an English default README and a structurally aligned Simplified Chinese README for Ask User Question in both standalone and bundle artifacts.
 - 44c7eee: Declare and verify compatibility with Pi 0.84 across the bundled extensions.
-- 44c7eee: Strip ANSI and terminal control sequences from child-agent text before rendering it in the parent TUI.
 
-## 0.15.0
-
-### Minor Changes
-
-- 983adbb: Add a maintained fork of `@tintinweb/pi-subagents@0.14.3` with a ConversationViewer that defaults to dispatch prompt, one-line tool step summaries, and final/current result instead of full tool-result dumps. Failed or cancelled bash executions show as error steps. Compact collapsible TUI for Agent / get_subagent_result / steer_subagent (Markdown when expanded), with model and effort chips on tool call/result rows. Honesty fixes: queued status/activity, failure `isError` shell mapping, resume chips from stored invocation, steered/stopped overlay chrome, dangling-step settle, stricter header peel and failure heuristics. Embed and register the package in the root `@zhcsyncer/pi-extensions` bundle.
-
-## 0.14.0
-
-### Minor Changes
-
-- 992463b: Publish a maintained structured-question fork with a non-overlay TUI layout, context-aware number-key selection, centered preview columns, and readable expandable post-interaction result rendering, and include it in the aggregate extension bundle.
-
-## 0.13.0
+## 0.7.0
 
 ### Minor Changes
 
 - 13df227: Add `diff.collapsedMode` to `pi-tool-display-intent`. When set to `summary`, edit and write diffs collapse to a single `↳ diff +N -M • H hunks • F files` stats line (plus a `Ctrl+O to expand` hint) before expansion, instead of the first `diff.collapsedRows` rows. The default `body` keeps the existing preview. The setting is exposed in the `/tool-display-intent` inspector as "Diff collapsed style" and rounds-trips through the v2 config; invalid values fall back to `body`.
 
-## 0.12.1
+## 0.6.1
 
 ### Patch Changes
 
@@ -293,53 +81,11 @@
 - c75a5d8: Restore built-in `promptSnippet` and `promptGuidelines` when overriding tools for display. Overrides now read metadata from Pi ToolDefinitions instead of wrapped AgentTools, so `read`, `write`, and the other owned tools reappear in the system prompt `Available tools` section.
 - c75a5d8: Keep generic and MCP failures visible in every result mode. Failed tools now render one content-derived error summary even when compact mode hides successful output, while `Ctrl+O` reveals the complete error content through the existing expanded preview budget.
 
-## 0.12.0
-
-### Minor Changes
-
-- b7677c4: Add Context7 documentation tools with compact self-contained TUI rendering and the full upstream skill. The package publishes as `@zhcsyncer/pi-context7` and is also embedded in the root extension bundle.
-
-## 0.11.0
-
-### Minor Changes
-
-- 1683e4f: Unify bundle extension configuration and state under `$PI_CODING_AGENT_DIR/extension-data/<extension-id>/`. Existing global and trusted-project files are migrated and upgraded automatically, unmappable fields are discarded with user-visible warnings, malformed files are preserved, and Plan artifacts remain at `$PI_CODING_AGENT_DIR/plans/`. Search Hub now reads refreshed configuration through Jiti-safe accessors so reader selection, credentials, and round-robin state take effect immediately.
-
-## 0.10.0
-
-### Minor Changes
-
-- 71227ee: Add a branch-aware Plan implementation lifecycle with explicit `complete_plan`, `/plan complete|abandon|revise`, safe legacy-state migration, and new-Plan defaults after work closes. Render `submit_plan` and `complete_plan` as compact self-managed TUI nodes with expandable historical review and completion audit details. Emit balanced Herdr `blocked` events while revdiff, lifecycle selectors, and completion confirmations wait for user input.
-
-## 0.9.0
-
-### Minor Changes
-
-- 101d68c: Follow Pi theme tokens on new installs, keep normal editor borders aligned with the selected color source while reserving a distinct color for Bash mode, apply the same source consistently to context progress, and improve npm/Pi catalog discovery metadata. Existing configs retain their Glance palette unless Follow Pi is explicitly selected.
-
-### Patch Changes
-
-- 101d68c: Allow Todo batches to create and start their first task in one operation, accept pending-to-completed reconciliation, remove the redundant activeForm field with legacy replay compatibility, add configurable ASCII, Unicode, and animated Nerd Font icons with static Todo headings and status-aware theme styling, and improve npm/Pi catalog discovery metadata.
-
-## 0.8.0
-
-### Minor Changes
-
-- da42f35: Turn `/search-setup` into Search Hub's combined status and configuration dashboard, remove the separate `/search-status` command and footer activity, add ordered default-reader fallback, simplify search routing into fallback/targeted/all modes, and remove the unused local search-result cache and cache settings. Backend rows now expose switch, unified resolved-auth readiness, URL, and project-override status up front; unresolved references display as no credential. Detail menus separate credential management from enablement and show global versus effective state, while Codex search resolves its credential through the current Pi model registry. Backends now live on a dedicated second-level page. All setup pages share one in-memory draft, and `Save & apply` validates and atomically writes once; closing with dirty state offers save, discard, or continued editing. Backend disablement remains reversible, and blank required credentials cannot enable a backend.
-- da42f35: Add automatic nearest-layer terminal multiplexer naming to recap: Herdr pane labels now take precedence over inherited tmux windows, legacy `tmux` config migrates to `multiplexer`, and ownership-aware restore avoids clobbering later manual renames while handling disable, reload, and shutdown lifecycles.
-- da42f35: Make Todo reliable for multi-stage work: isolate state per SDK session runtime, enforce lifecycle and dependency contracts, add atomic batch mutations, report validation failures as tool errors, and expose hidden successful calls in expanded audit views. Single-step work is now explicitly excluded from Todo guidance.
-
-## 0.7.0
-
-### Minor Changes
-
-- f3d7b88: Add a temporary read-only Plan Mode with `/plan on|off`, the `--plan` startup flag, keyboard shortcuts, fail-closed tools, revdiff review with word-level revision comparisons, immutable Plan revisions, configurable English or Simplified Chinese Plan content, compact custom-message approval handoff, immediate normal-tool restoration, and collapsible display-only Steps widgets.
-
 ## 0.6.0
 
 ### Minor Changes
 
-- 801204d: Add the maintained `@zhcsyncer/pi-glance` fork with composable extension statuses, configurable standalone or input-border context progress, one-third or remaining-width layouts, shared 70/85 context risk colors, and a plain/Nerd Font auto-compaction marker with semantic highlighting.
+- 1683e4f: Unify bundle extension configuration and state under `$PI_CODING_AGENT_DIR/extension-data/<extension-id>/`. Existing global and trusted-project files are migrated and upgraded automatically, unmappable fields are discarded with user-visible warnings, malformed files are preserved, and Plan artifacts remain at `$PI_CODING_AGENT_DIR/plans/`. Search Hub now reads refreshed configuration through Jiti-safe accessors so reader selection, credentials, and round-robin state take effect immediately.
 
 ## 0.5.1
 
@@ -355,11 +101,6 @@
 
   Emphasize model-written tool intents with the theme accent color while rendering deterministic commands, paths, and queries as normal text and retaining muted fallback intents.
 
-### Patch Changes
-
-- c1b1172: Add structurally aligned English and Simplified Chinese documentation for the root bundle and its private Search Hub fork. Document Search Hub's intent-aware semantic call lines, backend and reader result status, inherited display modes, shared preview budget, and Jina CSS selector semantics, and verify both README variants in npm pack checks.
-- 7a843b3: Remove release-version pins from every maintained README installation command so users always install the current repository release without documentation churn. Remove the version-time README rewrite and add a pack check that prevents pinned installation examples from returning.
-
 ## 0.4.0
 
 ### Minor Changes
@@ -371,7 +112,6 @@
 ### Minor Changes
 
 - 04800e0: Replace the flat tool-display configuration with a strictly validated, grouped, sparse v2 format. Existing configs migrate atomically with a one-time backup and status-bar guidance for the removed `bashCollapsedLines` field. Tool results now use one `compact | summary | preview` mode and a shared wrapped-row `previewRows` budget across read, search, MCP, custom, and bash output, preventing extremely long single-line results from flooding the transcript. The bundled JSON Schema uses direct field names, debug reads the real user config, and thinking labels remain independently configurable.
-- 88a9366: Publish a maintained fork of `@juicesharp/rpiv-todo` 1.20.0 as `@zhcsyncer/pi-todo` and include it in the aggregate bundle. Todo keeps branch-aware tool-result snapshots but hides successful transcript nodes in favor of its persistent widget, while preserving visible errors and intentionally avoiding display-intent metadata.
 
 ## 0.2.0
 
@@ -379,16 +119,33 @@
 
 - c1bafff: Add the `pi-tool-display-intent` extension and include it in the root bundle. The new package combines compact tool rendering with model-written, RPC-visible intent phrases without an extra inference request, preserves deterministic TUI metadata, keeps intent examples in model context for reliable follow-up calls, provides deterministic fallbacks and an optional Claude Code-inspired TUI style, sanitizes outgoing display text, and provides a cooperative custom-tool wrapper. Its built-in intent configuration uses the focused `toolIntent.enabled`, `toolIntent.language`, and `toolIntent.maxLength` surface, with enabled intent always required and visible in TUI and legacy `displaySummary` config migrated on load. Model-written intent uses the theme's primary text color for stronger contrast, while deterministic fallback intent remains muted. Output profiles only update read/search/MCP/bash density and preserve style, intent, ownership, diff, and advanced preferences; the separate reset command restores complete defaults.
 
-## 0.1.4
+All notable changes to `@zhcsyncer/pi-tool-display-intent` will be documented in this file.
 
-### Patch Changes
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-- 5709a8a: Use the editor widget as the sole persistent recap surface, remove the footer display mode and duplicate success notification, keep manual generation in its cancellable loader, and persistently clean up legacy display config fields.
+## Unreleased
 
-## 0.1.3
+### Added
 
-## 0.1.2
+- Forked `pi-tool-display` 0.5.0 into the `@zhcsyncer/pi-extensions` workspace under an independent package, config path, command, and runtime API namespace.
+- Added model-written `displaySummary` intent fields for seven owned built-in tools without additional inference requests.
+- Added sanitized TUI intent suffixes while retaining deterministic paths, commands, search patterns, and diff metadata.
+- Added deterministic per-tool intent fallbacks and optional Claude Code-inspired tool-call framing.
+- Added a cooperative `withDisplaySummary()` API for custom tool providers.
+- Added English and Chinese documentation, upstream attribution, and preserved upstream license/history files.
 
-### Patch Changes
+### Changed
 
-- 24abac8: Improve the recap widget hierarchy, restore it after reload, and show a cancellable loading indicator while generating manual recaps.
+- Replaced the flat configuration with a grouped, sparse v2 format that is strictly validated, atomically migrated with a one-time legacy backup, and documented by a bundled JSON Schema.
+- Replaced result Profiles and per-tool overrides with `results.mode: compact | summary | preview` plus one shared `results.previewRows` budget for read, search, MCP, custom, and bash previews.
+- Simplified built-in intent configuration to `toolIntent.enabled`, `toolIntent.language`, and `toolIntent.maxLength`; enabled intent is now always schema-required and visible in TUI, while legacy `displaySummary` config is migrated on load.
+- Increased intent contrast by rendering model-written phrases with the theme's primary text color and deterministic fallbacks with the muted color.
+- Renamed public fields for direct meaning (`toolCalls.style`, `diff.collapsedRows`, `transcript.userMessageStyle`, `tools.passthrough`, and `advanced.expandedRows`) and removed redundant extension/custom enable switches.
+- Kept legacy result mode and preset command names as aliases; `bashCollapsedLines` is discarded during migration with a one-time Pi status-bar adjustment hint.
+
+### Fixed
+
+- Prevented minified JSON, base64, and other very long single-line tool results from bypassing collapsed and expanded preview budgets across read, search, MCP, custom, and bash renderers.
+- Retained recent intent fields in model context so resumed and multi-turn runs continue producing `displaySummary`.
+- Backfilled missing intent into raw arguments before validation so later TUI/RPC updates can observe the fallback.
+- Canonicalized workspace preview containment checks without rejecting macOS `/var` paths that resolve under `/private/var`.

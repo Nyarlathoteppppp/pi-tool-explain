@@ -1,168 +1,82 @@
 {
-  "name": "@zhcsyncer/pi-extensions",
-  "version": "1.0.1",
-  "description": "A collection of Pi extensions by zhcsyncer.",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/zhcsyncer/pi-extensions.git"
+  "name": "@zhcsyncer/pi-tool-display-intent",
+  "version": "0.10.1",
+  "description": "Intent-aware tool rendering, diff visualization, and output compaction for Pi.",
+  "type": "module",
+  "main": "./extensions/tool-display-intent.ts",
+  "exports": {
+    ".": "./extensions/tool-display-intent.ts",
+    "./tool-display-api-consumer": {
+      "types": "./tool-display-api-consumer.d.ts",
+      "default": "./tool-display-api-consumer.js"
+    }
   },
-  "homepage": "https://github.com/zhcsyncer/pi-extensions#readme",
-  "bugs": {
-    "url": "https://github.com/zhcsyncer/pi-extensions/issues"
+  "files": [
+    "extensions",
+    "src",
+    "tool-display-api-consumer.js",
+    "tool-display-api-consumer.d.ts",
+    "config/config.example.json",
+    "config/config.schema.json",
+    "assets",
+    "README.md",
+    "README.zh-CN.md",
+    "CHANGELOG.md",
+    "LICENSE",
+    "UPSTREAM_LICENSE",
+    "UPSTREAM_CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "node scripts/run-tests.mjs",
+    "check": "npm run typecheck && npm test"
   },
   "keywords": [
     "pi-package",
     "pi-extension",
-    "pi-extensions"
+    "pi-coding-agent",
+    "pi-tui",
+    "tool-rendering",
+    "tool-intent",
+    "display-summary",
+    "diff-visualization",
+    "output-truncation"
+  ],
+  "author": "zhcsyncer",
+  "contributors": [
+    "MasuRii (original pi-tool-display author)",
+    "Mert Deveci (pi-tool-display-summary author)"
   ],
   "license": "MIT",
-  "type": "module",
-  "files": [
-    "README.md",
-    "README.zh-CN.md",
-    "packages/*/extensions/**/*.ts",
-    "packages/*/extensions/**/*.js",
-    "packages/*/src/**/*.ts",
-    "packages/*/src/**/*.js",
-    "packages/*/src/**/*.d.ts",
-    "packages/pi-tool-display-intent/tool-display-api-consumer.js",
-    "packages/pi-tool-display-intent/tool-display-api-consumer.d.ts",
-    "packages/*/config/*.json",
-    "packages/*/README*.md",
-    "packages/pi-tool-display-intent/assets/*.png",
-    "packages/pi-fast-mode/assets/**",
-    "packages/pi-meter/assets/**",
-    "packages/*/LICENSE",
-    "packages/*/UPSTREAM_LICENSE",
-    "packages/pi-todo/package.json",
-    "packages/pi-plan-mode/package.json",
-    "packages/pi-meter/package.json",
-    "packages/pi-consult/package.json",
-    "packages/pi-todo/config.ts",
-    "packages/pi-todo/config-paths.ts",
-    "packages/pi-todo/index.ts",
-    "packages/pi-todo/todo.ts",
-    "packages/pi-todo/todo-overlay.ts",
-    "packages/pi-todo/locales/*.json",
-    "packages/pi-todo/state/invariants.ts",
-    "packages/pi-todo/state/i18n-bridge.ts",
-    "packages/pi-todo/state/replay.ts",
-    "packages/pi-todo/state/selectors.ts",
-    "packages/pi-todo/state/state-reducer.ts",
-    "packages/pi-todo/state/state.ts",
-    "packages/pi-todo/state/store.ts",
-    "packages/pi-todo/tool/response-envelope.ts",
-    "packages/pi-todo/tool/types.ts",
-    "packages/pi-todo/view/format.ts",
-    "packages/pi-todo/UPSTREAM_README.md",
-    "packages/pi-todo/UPSTREAM_CHANGELOG.md",
-    "packages/pi-todo/UPSTREAM_SOURCE.md",
-    "packages/pi-glance/*.ts",
-    "packages/pi-glance/assets/**",
-    "packages/pi-glance/UPSTREAM_LICENSE",
-    "packages/pi-glance/UPSTREAM_SOURCE.md",
-    "packages/pi-search-hub/package.json",
-    "packages/pi-search-hub/backends/parsers.ts",
-    "packages/pi-search-hub/search.json.example",
-    "packages/pi-search-hub/UPSTREAM_NOTICE.md",
-    "packages/pi-search-hub/UPSTREAM_README.md",
-    "packages/pi-search-hub/UPSTREAM_CHANGELOG.md",
-    "packages/pi-search-hub/UPSTREAM_SOURCE.md",
-    "!packages/pi-search-hub/**/*.test.ts",
-    "packages/pi-context7/package.json",
-    "packages/pi-context7/lib/**/*.ts",
-    "packages/pi-context7/config.json.example",
-    "packages/pi-context7/skills/**/*",
-    "packages/pi-context7/CHANGELOG.md",
-    "packages/pi-context7/UPSTREAM_README.md",
-    "packages/pi-context7/UPSTREAM_CHANGELOG.md",
-    "packages/pi-context7/UPSTREAM_SOURCE.md",
-    "!packages/pi-context7/**/*.test.ts",
-    "packages/pi-ask-user-question/**/*.ts",
-    "packages/pi-ask-user-question/locales/*.json",
-    "packages/pi-ask-user-question/docs/*.md",
-    "packages/pi-ask-user-question/README.md",
-    "packages/pi-ask-user-question/README.zh-CN.md",
-    "packages/pi-ask-user-question/CHANGELOG.md",
-    "packages/pi-ask-user-question/LICENSE",
-    "packages/pi-ask-user-question/UPSTREAM_LICENSE",
-    "packages/pi-ask-user-question/UPSTREAM_README.md",
-    "packages/pi-ask-user-question/UPSTREAM_CHANGELOG.md",
-    "packages/pi-ask-user-question/UPSTREAM_SOURCE.md",
-    "!packages/pi-ask-user-question/**/*.test.ts",
-    "!packages/pi-ask-user-question/test-support.ts",
-    "!packages/pi-ask-user-question/test-fixtures.ts",
-    "!packages/pi-ask-user-question/vitest.config.ts",
-    "!packages/pi-ask-user-question/vitest.setup.ts",
-    "packages/pi-herdr-companion/package.json",
-    "packages/pi-herdr-companion/CHANGELOG.md",
-    "packages/pi-herdr-companion/UPSTREAM_LICENSE",
-    "packages/pi-herdr-companion/UPSTREAM_SOURCE.md",
-    "packages/pi-subagents/package.json",
-    "packages/pi-subagents/examples/**/*",
-    "packages/pi-subagents/CHANGELOG.md",
-    "packages/pi-subagents/UPSTREAM_README.md",
-    "packages/pi-subagents/UPSTREAM_CHANGELOG.md",
-    "packages/pi-subagents/UPSTREAM_SOURCE.md",
-    "!packages/pi-subagents/**/*.test.ts",
-    "!packages/pi-subagents/test/**",
-    "!packages/pi-adversarial-review/**"
-  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Nyarlathoteppppp/pi-tool-explain.git"
+  },
+  "homepage": "https://github.com/Nyarlathoteppppp/pi-tool-explain#readme",
+  "bugs": {
+    "url": "https://github.com/Nyarlathoteppppp/pi-tool-explain/issues"
+  },
+  "engines": {
+    "node": ">=20"
+  },
   "publishConfig": {
     "access": "public"
   },
-  "scripts": {
-    "changeset": "changeset",
-    "version-packages": "changeset version",
-    "release": "changeset publish",
-    "check": "pnpm check:release-policy && pnpm check:recap && pnpm check:fast-mode && pnpm check:subagents && pnpm check:adversarial-review && pnpm check:consult && pnpm check:smoke && pnpm check:pack",
-    "check:release-policy": "node --test scripts/release-policy.test.mjs scripts/npm-bootstrap.test.mjs scripts/check-smoke.test.mjs scripts/ci-scope.test.mjs && node scripts/check-release-policy.mjs",
-    "check:recap": "pnpm --filter @zhcsyncer/pi-recap check",
-    "check:fast-mode": "pnpm --filter @zhcsyncer/pi-fast-mode check",
-    "check:subagents": "pnpm --filter @zhcsyncer/pi-subagents check",
-    "check:adversarial-review": "pnpm --filter @zhcsyncer/pi-adversarial-review check",
-    "check:consult": "pnpm --filter @zhcsyncer/pi-consult check",
-    "check:smoke": "node scripts/check-smoke.mjs",
-    "check:pack": "node scripts/check-pack.mjs"
-  },
   "pi": {
     "extensions": [
-      "./packages/pi-recap/extensions/recap.ts",
-      "./packages/pi-tool-display-intent/extensions/tool-display-intent.ts",
-      "./packages/pi-todo/index.ts",
-      "./packages/pi-glance/index.ts",
-      "./packages/pi-plan-mode/extensions/plan-mode.ts",
-      "./packages/pi-search-hub/extensions/search-hub.ts",
-      "./packages/pi-context7/extensions/context7.ts",
-      "./packages/pi-ask-user-question/index.ts",
-      "./packages/pi-subagents/src/index.ts",
-      "./packages/pi-fast-mode/extensions/fast-mode.ts",
-      "./packages/pi-meter/extensions/meter.ts",
-      "./packages/pi-consult/extensions/consult.ts"
+      "./extensions/tool-display-intent.ts"
     ],
-    "skills": [
-      "./packages/pi-context7/skills"
-    ],
-    "image": "https://raw.githubusercontent.com/zhcsyncer/pi-extensions/main/packages/pi-glance/assets/demo.png"
-  },
-  "dependencies": {
-    "@juicesharp/rpiv-config": "2.4.0",
-    "@sinclair/typebox": "^0.34.49",
-    "croner": "^10.0.1",
-    "nanoid": "^5.0.0",
-    "typebox": "1.1.24",
-    "wreq-js": "2.3.1"
+    "image": "https://raw.githubusercontent.com/Nyarlathoteppppp/pi-tool-explain/main/assets/demo-aggregate-1.png"
   },
   "peerDependencies": {
-    "@earendil-works/pi-ai": ">=0.86.0",
-    "@earendil-works/pi-coding-agent": ">=0.86.0",
-    "@earendil-works/pi-tui": ">=0.86.0"
+    "@earendil-works/pi-coding-agent": ">=0.80.0 <1",
+    "@earendil-works/pi-tui": ">=0.80.0 <1"
   },
   "devDependencies": {
-    "@changesets/cli": "2.31.0",
-    "@earendil-works/pi-ai": "0.86.1",
     "@earendil-works/pi-coding-agent": "0.86.1",
-    "@earendil-works/pi-tui": "0.86.1"
-  },
-  "packageManager": "pnpm@11.11.0"
+    "@earendil-works/pi-tui": "0.86.1",
+    "tsx": "4.22.4",
+    "typescript": "6.0.3"
+  }
 }

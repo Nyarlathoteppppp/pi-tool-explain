@@ -1,9 +1,0 @@
-{
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "noEmit": false,
-    "outDir": ".tmp-git-dev",
-    "rootDir": "."
-  },
-  "include": ["*.ts", "scripts/*.ts"]
-}
