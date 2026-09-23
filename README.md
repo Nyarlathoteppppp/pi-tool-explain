@@ -14,7 +14,7 @@ $ pnpm test — Verifying the extension test suite
   ⎿ loaded 42 lines
 ```
 
-The current model writes `displaySummary` in the normal tool call. This extension does **not** make another inference request, use a second model, or need another API key.
+The current model writes `displaySummary` in the normal tool call. This extension does **not** make another inference request, use a second model, or need another API key. The extra schema instructions and summary still consume a small number of input and output tokens.
 
 ## Features
 
@@ -32,16 +32,16 @@ Do not load `pi-tool-display`, `pi-tool-display-summary`, and this extension tog
 
 ## Install
 
+If you previously installed the upstream npm package, remove it first so both extensions do not register the same tools:
+
+```bash
+pi remove npm:@zhcsyncer/pi-tool-display-intent
+```
+
 Install this single-package fork directly from GitHub:
 
 ```bash
 pi install git:github.com/Nyarlathoteppppp/pi-tool-explain
-```
-
-This Git source is the fork with `native` mode. The upstream npm package below does not contain this fork's changes:
-
-```bash
-pi install npm:@zhcsyncer/pi-tool-display-intent
 ```
 
 Then restart Pi or run `/reload`. In `/tools`, choose **individual → native**. Set **Bash intent language → Simplified Chinese** if desired, then reload again.

@@ -14,7 +14,7 @@ $ pnpm test — 验证 extension 测试套件
   ⎿ loaded 42 lines
 ```
 
-当前模型在正常 tool call 里写 `displaySummary`。这个扩展**不会**再发起一次推理，也不需要第二个模型或额外 API Key。
+当前模型在正常 tool call 里写 `displaySummary`。这个扩展**不会**再发起一次推理，也不需要第二个模型或额外 API Key；新增的 schema 指令和摘要仍会消耗少量输入、输出 token。
 
 ## 功能
 
@@ -32,16 +32,16 @@ $ pnpm test — 验证 extension 测试套件
 
 ## 安装
 
+如果以前安装过上游 npm 包，先卸载旧包，避免两个扩展注册同名工具：
+
+```bash
+pi remove npm:@zhcsyncer/pi-tool-display-intent
+```
+
 这个 fork 现在只包含一个插件，可直接从 GitHub 安装：
 
 ```bash
 pi install git:github.com/Nyarlathoteppppp/pi-tool-explain
-```
-
-上面安装的是你的 fork。下面的 npm 包属于上游，尚不包含本 fork 的改动：
-
-```bash
-pi install npm:@zhcsyncer/pi-tool-display-intent
 ```
 
 然后重启 Pi 或执行 `/reload`。在 `/tools` 里选择 **individual → native**；需要中文解释时，把 **Bash intent language** 设为 **简体中文**，再执行 `/reload`。

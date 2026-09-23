@@ -340,6 +340,30 @@ test("native executes available built-ins through the existing tool path", async
 	});
 });
 
+test("native find keeps Pi's execution outcome, including a missing fd dependency", async () => {
+	await withTempDir("pi-tool-display-native-find-", async (dir) => {
+		writeFileSync(join(dir, "sample.txt"), "hello\n");
+		const { api, registeredTools } = createExtensionApiStub();
+		registerToolDisplayOverrides(api, () => ({ ...DEFAULT_TOOL_DISPLAY_CONFIG, toolCallStyle: "native" }));
+		const wrapped = registeredTools.find((entry) => entry.name === "find") as ExecutableToolLike | undefined;
+		assert.ok(wrapped);
+		const original = createFindToolDefinition(dir);
+		const args = { pattern: "*.txt", path: dir };
+		const [expected, actual] = await Promise.allSettled([
+			original.execute("original-find", args, undefined, undefined, { cwd: dir } as never),
+			wrapped.execute("wrapped-find", wrapped.prepareArguments?.(args) ?? args, undefined, undefined, { cwd: dir }),
+		]);
+		assert.equal(actual.status, expected.status);
+		if (expected.status === "fulfilled" && actual.status === "fulfilled") {
+			assert.match(getTextOutput(actual.value), /sample\.txt/);
+			assert.equal(getTextOutput(actual.value), getTextOutput(expected.value));
+		} else if (expected.status === "rejected" && actual.status === "rejected") {
+			assert.match(String(expected.reason), /fd is not available and could not be downloaded/);
+			assert.equal(String(actual.reason), String(expected.reason));
+		}
+	});
+});
+
 test("path-bearing built-ins compact long call paths and restore them when expanded", () => {
 	const { api, registeredTools } = createExtensionApiStub();
 	const config = {
